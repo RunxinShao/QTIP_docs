@@ -1,0 +1,18 @@
+site_name: QTIP Project Notes
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+  - what is Quantization: what_is_quantization.md
+  - Understanding QTIP paper&code in a not-so-right way:
+      - QTIP Overview: qtip_overview.md
+      - Trellis Quantization: 1_trellis_quantization.md
+      - Decoding Methods: 1_decoding_methods.md
+      - QTIP Codebase: 1_qtip_codebase.md
+  - Integration with vLLM:
+      - environment setup: environment_setup.md
+      - vLLM Overview: vllm_overview.md
+      - Understanding vLLM Quantization part: vllm_quantization.md
+      - vLLM Integration Steps: vllm_integration_steps.md
+ 

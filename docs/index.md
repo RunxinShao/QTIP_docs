@@ -1,0 +1,7 @@
+# Background
+
+Large language models offer state-of-the-art performance across many NLP tasks, but their massive size poses significant challenges for efficient deployment. Quantization techniques help reduce memory and computation cost by compressing model weights into low-bit representations. Among these, QTIP (Quantization with Trellises and Incoherence Processing) stands out as a recent method that combines Gaussianization and trellis-based encoding to achieve high-quality 2–4 bit quantization. For more details, see the QTIP paper: [QTIP: Quantization with Trellises and Incoherence Processing](https://arxiv.org/abs/2406.11235).
+
+At the same time, [vLLM](https://github.com/vllm-project/vllm) is an open-source, high-throughput inference engine designed to serve LLMs efficiently using features like PagedAttention and kernel fusion. However, it does not natively support advanced quantization methods like QTIP.
+
+This project focuses on integrating QTIP into vLLM’s inference pipeline. The work includes decoding the QTIP compression logic, writing a full Python implementation, modifying vLLM’s linear layer to support QTIP-based quantized weights and testing. The result is a hybrid system that combines algorithmic innovation with systems-level engineering, enabling lower latency inference while maintaining model accuracy.
