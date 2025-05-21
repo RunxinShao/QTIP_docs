@@ -1,7 +1,7 @@
 site_name: QTIP Project Notes
 theme:
   name: material
-  favicon: images/favicon.ico
+  favicon: img/favicon.ico
 nav:
   - Home: index.md
   - what is Quantization: what_is_quantization.md
