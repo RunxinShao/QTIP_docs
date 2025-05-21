@@ -1,0 +1,1217 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../qtip_overview/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    
+    
+      
+        <title>what is Quantization - QTIP Project Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#understanding-quantization-in-deep-learning" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="QTIP Project Notes" class="md-header__button md-logo" aria-label="QTIP Project Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            QTIP Project Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              what is Quantization
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="QTIP Project Notes" class="md-nav__button md-logo" aria-label="QTIP Project Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    QTIP Project Notes
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    what is Quantization
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    what is Quantization
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      What is Quantization?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why Quantization?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quantization-techniques" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quantization Techniques
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quantization Techniques">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#from-uniform-scalar-quantization-to-scale-zeropoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      From Uniform Scalar Quantization to Scale-ZeroPoint
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="From Uniform Scalar Quantization to Scale-ZeroPoint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uniform-scalar-quantizer-usq" class="md-nav__link">
+    <span class="md-ellipsis">
+      Uniform Scalar Quantizer (USQ)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scale-and-zero-point-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scale and Zero-Point Framework
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#types-of-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Types of Quantization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Types of Quantization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-value-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Value Mapping
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-granularity" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Granularity
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-timing" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Timing
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methods-of-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods of Quantization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods of Quantization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-uniform-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Uniform Quantization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-non-uniform-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Non-Uniform Quantization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-weight-only-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Weight-Only Quantization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-activation-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Activation Quantization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-mixed-precision-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Mixed-Precision Quantization
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#applications-of-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Applications of Quantization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Applications of Quantization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-on-device-ai" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. On-Device AI
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-cloud-inference-at-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Cloud Inference at Scale
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-faster-model-loading" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Faster Model Loading
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-custom-hardware-acceleration" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Custom Hardware Acceleration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-advanced-research" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Advanced Research
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Understanding QTIP paper&code in a not-so-right way
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Understanding QTIP paper&code in a not-so-right way
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../qtip_overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    QTIP Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1_trellis_quantization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Trellis Quantization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1_decoding_methods/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Decoding Methods
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1_qtip_codebase/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    QTIP Codebase
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Integration with vLLM
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Integration with vLLM
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environment_setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    environment setup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vllm_overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    vLLM Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vllm_quantization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Understanding vLLM Quantization part
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vllm_integration_steps/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    vLLM Integration Steps
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      What is Quantization?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why Quantization?
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quantization-techniques" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quantization Techniques
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quantization Techniques">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#from-uniform-scalar-quantization-to-scale-zeropoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      From Uniform Scalar Quantization to Scale-ZeroPoint
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="From Uniform Scalar Quantization to Scale-ZeroPoint">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uniform-scalar-quantizer-usq" class="md-nav__link">
+    <span class="md-ellipsis">
+      Uniform Scalar Quantizer (USQ)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scale-and-zero-point-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scale and Zero-Point Framework
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#types-of-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Types of Quantization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Types of Quantization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-value-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Value Mapping
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-granularity" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Granularity
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-timing" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Timing
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#methods-of-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Methods of Quantization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods of Quantization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-uniform-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Uniform Quantization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-non-uniform-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Non-Uniform Quantization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-weight-only-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Weight-Only Quantization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-activation-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Activation Quantization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-mixed-precision-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Mixed-Precision Quantization
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#applications-of-quantization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Applications of Quantization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Applications of Quantization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-on-device-ai" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. On-Device AI
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-cloud-inference-at-scale" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Cloud Inference at Scale
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-faster-model-loading" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Faster Model Loading
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-custom-hardware-acceleration" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Custom Hardware Acceleration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-advanced-research" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Advanced Research
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="understanding-quantization-in-deep-learning">Understanding Quantization in Deep Learning</h1>
+<h2 id="what-is-quantization">What is Quantization?</h2>
+<p>Quantization is the process of approximating continuous or high-precision values with discrete, lower-precision ones. In deep learning, it commonly refers to converting 32-bit floating-point weights and activations into lower-bit formats like int8, int4, or even binary.</p>
+<blockquote>
+<p><strong>Example:</strong> Instead of representing a weight as 3.14159265 (float32), we can represent it as 3 (int8), accepting a small error in exchange for speed and memory savings.</p>
+</blockquote>
+<p>This transformation drastically reduces model size and computational cost—enabling efficient inference on:
+- Mobile devices
+- Embedded systems
+- Large-scale cloud services</p>
+<h2 id="why-quantization">Why Quantization?</h2>
+<p>Modern large language models (LLMs) contain billions of parameters. Deploying these models at scale presents several challenges:</p>
+<table>
+<thead>
+<tr>
+<th>Challenge</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Memory Bandwidth</strong></td>
+<td>Loading float32 weights for each layer consumes massive bandwidth</td>
+</tr>
+<tr>
+<td><strong>Inference Latency</strong></td>
+<td>Matrix multiplication with float32 is slower than with int8</td>
+</tr>
+<tr>
+<td><strong>Hardware Limitations</strong></td>
+<td>Many devices (smartphones, IoT boards) cannot efficiently process float32</td>
+</tr>
+</tbody>
+</table>
+<p>Quantization addresses these issues by reducing data precision while preserving as much model accuracy as possible, enabling real-time inference with less power and hardware cost.</p>
+<h2 id="quantization-techniques">Quantization Techniques</h2>
+<h3 id="from-uniform-scalar-quantization-to-scale-zeropoint">From Uniform Scalar Quantization to Scale-ZeroPoint</h3>
+<h4 id="uniform-scalar-quantizer-usq">Uniform Scalar Quantizer (USQ)</h4>
+<p>The most basic quantizer maps floating-point values to fixed intervals (buckets):</p>
+<ol>
+<li>Define float value range (e.g., −10 to +10)</li>
+<li>Choose number of levels (e.g., 256 levels for 8 bits)</li>
+<li>Calculate bucket width = (max − min) / (levels - 1) ≈ 0.078</li>
+<li>Round each value to the nearest bucket center</li>
+</ol>
+<h4 id="scale-and-zero-point-framework">Scale and Zero-Point Framework</h4>
+<p>To generalize the process and make it hardware-friendly, we use two parameters:</p>
+<ul>
+<li><strong>Scale (α)</strong>: the step size between quantization levels</li>
+<li><strong>Zero-point (z)</strong>: the integer value that corresponds to 0 in float</li>
+</ul>
+<p><strong>Formulas:</strong>
+- Quantization: <code>q = round(x / scale) + zero_point</code>
+- Dequantization: <code>x = scale * (q - zero_point)</code></p>
+<p><strong>Example:</strong><br />
+For values in range [0, 6] using 8-bit unsigned integers (0-255):
+- Scale = (6 - 0) / 255 = 0.0235
+- Zero-point = 0 (since 0 maps to 0)
+- Float 3.0 → Quantized = round(3.0 / 0.0235) = 128
+- Back to float: 0.0235 * (128 - 0) ≈ 3.008</p>
+<p>This simple method is known as affine quantization.</p>
+<h2 id="types-of-quantization">Types of Quantization</h2>
+<h3 id="1-value-mapping">1. Value Mapping</h3>
+<ul>
+<li><strong>Symmetric:</strong> Zero-point is 0; float 0 always maps to int 0</li>
+<li><strong>Asymmetric:</strong> Zero-point can be non-zero, better for unbalanced ranges</li>
+</ul>
+<h3 id="2-granularity">2. Granularity</h3>
+<ul>
+<li><strong>Per-tensor:</strong> One scale/zero-point for whole weight tensor</li>
+<li><strong>Per-channel:</strong> Different scale/zero-point for each output channel</li>
+</ul>
+<h3 id="3-timing">3. Timing</h3>
+<ul>
+<li><strong>Post-Training Quantization (PTQ):</strong> Apply quantization after model training</li>
+<li><strong>Quantization-Aware Training (QAT):</strong> Simulate quantization during training</li>
+</ul>
+<h2 id="methods-of-quantization">Methods of Quantization</h2>
+<h3 id="1-uniform-quantization">1. Uniform Quantization</h3>
+<ul>
+<li>Uses fixed step sizes (as explained above)</li>
+<li>Fast and easy to implement</li>
+</ul>
+<h3 id="2-non-uniform-quantization">2. Non-Uniform Quantization</h3>
+<ul>
+<li>Step size varies (e.g., logarithmic)</li>
+<li>Can better preserve small values but needs lookup tables</li>
+</ul>
+<h3 id="3-weight-only-quantization">3. Weight-Only Quantization</h3>
+<ul>
+<li>Only compresses model weights, not activations</li>
+<li>Useful when activation computation is not a bottleneck</li>
+</ul>
+<h3 id="4-activation-quantization">4. Activation Quantization</h3>
+<ul>
+<li>Applies to intermediate layer outputs</li>
+<li>Reduces memory bandwidth</li>
+</ul>
+<h3 id="5-mixed-precision-quantization">5. Mixed-Precision Quantization</h3>
+<ul>
+<li>Combines multiple bit-widths depending on sensitivity of layers</li>
+<li>Often used in practice (e.g., 8-bit activations, 4-bit weights)</li>
+</ul>
+<h2 id="applications-of-quantization">Applications of Quantization</h2>
+<h3 id="1-on-device-ai">1. On-Device AI</h3>
+<p>Quantization enables efficient inference on phones, edge devices, and embedded systems.</p>
+<h3 id="2-cloud-inference-at-scale">2. Cloud Inference at Scale</h3>
+<p>Cloud models save compute and power costs by running quantized versions.</p>
+<h3 id="3-faster-model-loading">3. Faster Model Loading</h3>
+<p>Compressed weights reduce I/O load and load times.</p>
+<h3 id="4-custom-hardware-acceleration">4. Custom Hardware Acceleration</h3>
+<p>Quantized models align better with AI chips like TPUs, NPUs, and Tensor Cores.</p>
+<h3 id="5-advanced-research">5. Advanced Research</h3>
+<p>Methods like Trellis-Coded Quantization (TCQ) push boundaries of low-bit compression.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  </body>
+</html>

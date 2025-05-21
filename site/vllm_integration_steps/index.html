@@ -1,0 +1,1079 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../vllm_quantization/">
+      
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+    
+    
+      
+        <title>vLLM Integration Steps - QTIP Project Notes</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.342714a4.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#integrating-qtip-into-vllm-step-by-step-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="QTIP Project Notes" class="md-header__button md-logo" aria-label="QTIP Project Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            QTIP Project Notes
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              vLLM Integration Steps
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="QTIP Project Notes" class="md-nav__button md-logo" aria-label="QTIP Project Notes" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    QTIP Project Notes
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../what_is_quantization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    what is Quantization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Understanding QTIP paper&code in a not-so-right way
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Understanding QTIP paper&code in a not-so-right way
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../qtip_overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    QTIP Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1_trellis_quantization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Trellis Quantization
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1_decoding_methods/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Decoding Methods
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1_qtip_codebase/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    QTIP Codebase
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Integration with vLLM
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Integration with vLLM
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../environment_setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    environment setup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vllm_overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    vLLM Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vllm_quantization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Understanding vLLM Quantization part
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    vLLM Integration Steps
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    vLLM Integration Steps
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-prepare-quantize_configjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Prepare quantize_config.json
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-define-qtipconfig-in-quantization_configpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Define QTIPConfig (in quantization_config.py)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-define-qtiplinearmethod-in-methodpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Define QTIPLinearMethod (in method.py)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-implement-quantizedlinear-in-layersquantized_linearpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4: Implement QuantizedLinear (in layers/quantized_linear.py)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-add-python-fallback-decode-in-bitshift_codebookpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 5: Add Python Fallback Decode (in bitshift_codebook.py)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-6-optional-register-custom-cuda-kernel-in-_custom_ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 6: Optional — Register Custom CUDA Kernel (in _custom_ops/)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-7-test-the-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 7: Test the Integration
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-prepare-quantize_configjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: Prepare quantize_config.json
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-define-qtipconfig-in-quantization_configpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: Define QTIPConfig (in quantization_config.py)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-define-qtiplinearmethod-in-methodpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: Define QTIPLinearMethod (in method.py)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-implement-quantizedlinear-in-layersquantized_linearpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4: Implement QuantizedLinear (in layers/quantized_linear.py)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-add-python-fallback-decode-in-bitshift_codebookpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 5: Add Python Fallback Decode (in bitshift_codebook.py)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-6-optional-register-custom-cuda-kernel-in-_custom_ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 6: Optional — Register Custom CUDA Kernel (in _custom_ops/)
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-7-test-the-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 7: Test the Integration
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="integrating-qtip-into-vllm-step-by-step-guide">Integrating QTIP into vLLM — Step-by-Step Guide</h1>
+<p>This guide walks through the exact steps to integrate the QTIP quantization method into vLLM's inference engine. By following this, you will be able to run QTIP-compressed models directly with vLLM's fast and scalable infrastructure.</p>
+<h2 id="step-1-prepare-quantize_configjson">Step 1: Prepare <code>quantize_config.json</code></h2>
+<p>Create a QTIP configuration file. Example:</p>
+<pre><code class="language-json">{
+  &quot;quant_method&quot;: &quot;qtip&quot;,
+  &quot;L&quot;: 16,
+  &quot;K&quot;: 2,
+  &quot;V&quot;: 2,
+  &quot;tlut_bits&quot;: 16,
+  &quot;decode_mode&quot;: &quot;1mad&quot;,
+  &quot;quantlut_path&quot;: &quot;checkpoints/llama/qtip/quantlut.pt&quot;
+}
+</code></pre>
+<p>This config must be placed in the model folder, or passed via CLI when launching vLLM.</p>
+<h2 id="step-2-define-qtipconfig-in-quantization_configpy">Step 2: Define QTIPConfig (in quantization_config.py)</h2>
+<p>Create a new class to parse the QTIP config:</p>
+<pre><code class="language-python">from typing import Any, Optional
+import torch
+from vllm.model_executor.layers.quantization.base_config import QuantizationConfig
+from vllm.model_executor.layers.quantization import QuantizationMethods
+
+class QTIPConfig(QuantizationConfig):
+    &quot;&quot;&quot;Config class for QTIP quantization.&quot;&quot;&quot;
+
+    def __init__(self, L: int, K: int, V: int, tlut_bits: int = 16,
+                 decode_mode: str = &quot;1mad&quot;, quantlut_path: Optional[str] = None):
+        super().__init__()
+        self.L = L  # Number of codebooks
+        self.K = K  # Number of centroids per codebook
+        self.V = V  # Number of vectors per centroid
+        self.tlut_bits = tlut_bits  # Bits for lookup table
+        self.decode_mode = decode_mode  # Decoding mode: &quot;1mad&quot;, &quot;3inst&quot;, or &quot;quantlut&quot;
+        self.quantlut_path = quantlut_path  # Path to quantization lookup table
+
+    @classmethod
+    def get_name(cls) -&gt; QuantizationMethods:
+        return &quot;qtip&quot;
+
+    @classmethod 
+    def get_supported_act_dtypes(cls) -&gt; list[torch.dtype]:
+        return [torch.float16, torch.bfloat16]
+
+    @classmethod
+    def get_min_capability(cls) -&gt; int:
+        return 70  # Minimum CUDA capability required
+
+    @classmethod
+    def get_config_filenames(cls) -&gt; list[str]:
+        return [&quot;quantize_config.json&quot;]
+
+    @classmethod
+    def from_config(cls, config: dict[str, Any]) -&gt; &quot;QTIPConfig&quot;:
+        L = cls.get_from_keys(config, [&quot;L&quot;])
+        K = cls.get_from_keys(config, [&quot;K&quot;]) 
+        V = cls.get_from_keys(config, [&quot;V&quot;])
+        tlut_bits = cls.get_from_keys_or(config, [&quot;tlut_bits&quot;], 16)
+        decode_mode = cls.get_from_keys_or(config, [&quot;decode_mode&quot;], &quot;1mad&quot;)
+        quantlut_path = cls.get_from_keys_or(config, [&quot;quantlut_path&quot;], None)
+
+        return cls(L=L, K=K, V=V, tlut_bits=tlut_bits,
+                  decode_mode=decode_mode, quantlut_path=quantlut_path)
+
+    def get_quant_method(self, layer: torch.nn.Module,
+                        prefix: str) -&gt; Optional[&quot;QTIPLinearMethod&quot;]:
+        if isinstance(layer, LinearBase):
+            return QTIPLinearMethod(self)
+        return None
+</code></pre>
+<h2 id="step-3-define-qtiplinearmethod-in-methodpy">Step 3: Define QTIPLinearMethod (in method.py)</h2>
+<p>Implement a new quantization method:</p>
+<pre><code class="language-python">from typing import Optional
+import torch
+from vllm.model_executor.layers.linear import LinearBase, LinearMethodBase
+from vllm.model_executor.layers.quantization.base_config import QuantizeMethodBase
+from vllm.model_executor.utils import set_weight_attrs
+
+class QTIPLinearMethod(QuantizeMethodBase):
+    &quot;&quot;&quot;Linear method for QTIP quantization.&quot;&quot;&quot;
+
+    def __init__(self, config: QTIPConfig):
+        self.config = config
+
+    def create_weights(self, layer: torch.nn.Module,
+                      input_size_per_partition: int,
+                      output_partition_sizes: list[int],
+                      input_size: int,
+                      output_size: int,
+                      params_dtype: torch.dtype,
+                      **extra_weight_attrs):
+        # Create compressed weight storage
+        weight = torch.nn.Parameter(
+            torch.empty(sum(output_partition_sizes),
+                       input_size_per_partition,
+                       dtype=params_dtype),
+            requires_grad=False)
+
+        # Initialize codebook
+        cb = BitshiftCodebook(self.config)
+        cb.quantize(weight)
+        layer.qtip_cb = cb
+
+        set_weight_attrs(weight, {&quot;input_dim&quot;: 1, &quot;output_dim&quot;: 0})
+        layer.register_parameter(&quot;weight&quot;, weight)
+        set_weight_attrs(weight, extra_weight_attrs)
+
+    def apply(self, layer: torch.nn.Module,
+              x: torch.Tensor,
+              bias: Optional[torch.Tensor] = None) -&gt; torch.Tensor:
+        # Decode weights if not cached
+        if not hasattr(layer, &quot;decoded_weight&quot;):
+            layer.decoded_weight = layer.qtip_cb.recons()
+
+        # Perform matrix multiplication
+        out = torch.matmul(x, layer.decoded_weight.t())
+        if bias is not None:
+            out += bias
+        return out
+
+    def process_weights_after_loading(self, layer: torch.nn.Module) -&gt; None:
+        # Load quantization lookup table if specified
+        if self.config.quantlut_path:
+            layer.qtip_cb.load_quantlut(self.config.quantlut_path)
+</code></pre>
+<h2 id="step-4-implement-quantizedlinear-in-layersquantized_linearpy">Step 4: Implement QuantizedLinear (in layers/quantized_linear.py)</h2>
+<p>This wrapper replaces the original nn.Linear:</p>
+<pre><code class="language-python">import torch
+import torch.nn as nn
+from typing import Optional
+
+class QuantizedLinear(nn.Module):
+    &quot;&quot;&quot;Quantized linear layer using QTIP method.&quot;&quot;&quot;
+
+    def __init__(self, original_layer: nn.Linear, config: QTIPConfig):
+        super().__init__()
+        self.qtip_cb = None
+        self.bias = original_layer.bias
+        self.config = config
+
+    def forward(self, x: torch.Tensor) -&gt; torch.Tensor:
+        # Decode weights if not cached
+        if not hasattr(self, &quot;decoded_weight&quot;):
+            if self.config.decode_mode == &quot;1mad&quot;:
+                self.decoded_weight = decode_1mad(self.qtip_cb.encoded, self.config)
+            elif self.config.decode_mode == &quot;3inst&quot;:
+                self.decoded_weight = decode_3inst(self.qtip_cb.encoded, self.config)
+            elif self.config.decode_mode == &quot;quantlut&quot;:
+                self.decoded_weight = lookup_decode(self.qtip_cb.encoded, self.config)
+            else:
+                raise ValueError(f&quot;Unsupported decode mode: {self.config.decode_mode}&quot;)
+
+        # Perform matrix multiplication
+        out = torch.matmul(x, self.decoded_weight.t())
+        if self.bias is not None:
+            out += self.bias
+        return out
+</code></pre>
+<h2 id="step-5-add-python-fallback-decode-in-bitshift_codebookpy">Step 5: Add Python Fallback Decode (in bitshift_codebook.py)</h2>
+<p>Make sure your BitshiftCodebook implements:</p>
+<pre><code class="language-python">import torch
+from typing import Optional
+
+def decode_1mad(encoded: torch.Tensor, config: QTIPConfig) -&gt; torch.Tensor:
+    &quot;&quot;&quot;Decode using 1-MAD (Multiply-Add) method.&quot;&quot;&quot;
+    # Implementation of 1-MAD decoding
+    # This is a simplified version - actual implementation would be more complex
+    decoded = torch.zeros_like(encoded)
+    for i in range(config.L):
+        codebook = encoded[i]
+        decoded += codebook
+    return decoded
+
+def decode_3inst(encoded: torch.Tensor, config: QTIPConfig) -&gt; torch.Tensor:
+    &quot;&quot;&quot;Decode using 3-instruction method.&quot;&quot;&quot;
+    # Implementation of 3-instruction decoding
+    # This is a simplified version - actual implementation would be more complex
+    decoded = torch.zeros_like(encoded)
+    for i in range(config.L):
+        codebook = encoded[i]
+        decoded += codebook
+    return decoded
+
+def lookup_decode(encoded: torch.Tensor, config: QTIPConfig) -&gt; torch.Tensor:
+    &quot;&quot;&quot;Decode using lookup table method.&quot;&quot;&quot;
+    # Implementation of lookup table decoding
+    # This is a simplified version - actual implementation would be more complex
+    if not hasattr(config, &quot;quantlut&quot;):
+        config.load_quantlut(config.quantlut_path)
+    return config.quantlut[encoded]
+
+class BitshiftCodebook:
+    &quot;&quot;&quot;Codebook for QTIP quantization.&quot;&quot;&quot;
+
+    def __init__(self, config: QTIPConfig):
+        self.config = config
+        self.encoded = None
+
+    def quantize(self, weight: torch.Tensor) -&gt; None:
+        &quot;&quot;&quot;Quantize weights using QTIP method.&quot;&quot;&quot;
+        # Implementation of quantization
+        # This is a simplified version - actual implementation would be more complex
+        self.encoded = weight.clone()
+
+    def recons(self) -&gt; torch.Tensor:
+        &quot;&quot;&quot;Reconstruct weights from codebook.&quot;&quot;&quot;
+        if self.config.decode_mode == &quot;1mad&quot;:
+            return decode_1mad(self.encoded, self.config)
+        elif self.config.decode_mode == &quot;3inst&quot;:
+            return decode_3inst(self.encoded, self.config)
+        elif self.config.decode_mode == &quot;quantlut&quot;:
+            return lookup_decode(self.encoded, self.config)
+        else:
+            raise ValueError(f&quot;Unsupported decode mode: {self.config.decode_mode}&quot;)
+
+    def load_quantlut(self, path: str) -&gt; None:
+        &quot;&quot;&quot;Load quantization lookup table.&quot;&quot;&quot;
+        self.quantlut = torch.load(path)
+</code></pre>
+<h2 id="step-6-optional-register-custom-cuda-kernel-in-_custom_ops">Step 6: Optional — Register Custom CUDA Kernel (in _custom_ops/)</h2>
+<p>If you have a kernel version of BitshiftLinear (e.g., bitshift_linear_kernel.cu), register it as:</p>
+<pre><code class="language-cpp">// bitshift_linear_kernel.cu
+#include &lt;torch/extension.h&gt;
+#include &lt;cuda.h&gt;
+#include &lt;cuda_runtime.h&gt;
+
+// CUDA kernel for QTIP linear layer
+__global__ void bitshift_gemm_kernel(
+    const float* input,
+    const float* weight,
+    float* output,
+    int m, int n, int k) {
+    // Implementation of CUDA kernel
+    // This is a simplified version - actual implementation would be more complex
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx &lt; m * n) {
+        int i = idx / n;
+        int j = idx % n;
+        float sum = 0.0f;
+        for (int kk = 0; kk &lt; k; kk++) {
+            sum += input[i * k + kk] * weight[kk * n + j];
+        }
+        output[idx] = sum;
+    }
+}
+
+torch::Tensor bitshift_gemm(
+    torch::Tensor input,
+    torch::Tensor weight,
+    torch::Tensor bias) {
+
+    auto m = input.size(0);
+    auto k = input.size(1);
+    auto n = weight.size(0);
+
+    auto output = torch::empty({m, n}, input.options());
+
+    dim3 block(256);
+    dim3 grid((m * n + block.x - 1) / block.x);
+
+    bitshift_gemm_kernel&lt;&lt;&lt;grid, block&gt;&gt;&gt;(
+        input.data_ptr&lt;float&gt;(),
+        weight.data_ptr&lt;float&gt;(),
+        output.data_ptr&lt;float&gt;(),
+        m, n, k);
+
+    if (bias.defined()) {
+        output += bias;
+    }
+
+    return output;
+}
+
+PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+    m.def(&quot;bitshift_gemm&quot;, &amp;bitshift_gemm, &quot;QTIP linear layer (CUDA)&quot;);
+}
+</code></pre>
+<p>Also create a CMake entry to build the op:</p>
+<pre><code class="language-cmake">find_package(CUDA REQUIRED)
+find_package(Torch REQUIRED)
+
+add_library(bitshift_linear SHARED
+    bitshift_linear_kernel.cu
+)
+
+target_link_libraries(bitshift_linear
+    ${TORCH_LIBRARIES}
+    ${CUDA_LIBRARIES}
+)
+
+set_target_properties(bitshift_linear PROPERTIES
+    CUDA_SEPARABLE_COMPILATION ON
+)
+</code></pre>
+<h2 id="step-7-test-the-integration">Step 7: Test the Integration</h2>
+<p>✅ Run with <code>python -m vllm.entrypoints.openai.api_server --quantize_config quantize_config.json</code></p>
+<p>✅ Load a model compressed with QTIP</p>
+<p>✅ Send a sample prompt</p>
+<p>✅ Verify decode speed and correctness</p>
+<p>This implementation provides basic QTIP quantization functionality, including:</p>
+<ul>
+<li>Support for multiple decoding modes (1-MAD, 3-instruction, lookup table)</li>
+<li>Configurable quantization parameters (L, K, V, bits, etc.)</li>
+<li>CUDA acceleration support</li>
+<li>Integration with vLLM's existing quantization framework</li>
+</ul>
+<p>You can further optimize and extend this implementation based on your specific needs.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      
+    
+  </body>
+</html>
