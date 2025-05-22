@@ -58,7 +58,6 @@ Step-by-Step Flow:
 This structure enables QTIP to seamlessly fit into the same flow.
 
 ```mermaid
-graph TD
     A[Load Model] --> B[Read quantize_config.json]
     B --> C[Instantiate QuantizationConfig]
     C --> D[Get QuantizationMethod]
