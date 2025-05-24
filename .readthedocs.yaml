@@ -10,6 +10,9 @@
    jobs:
      pre_install:
        - pip install mkdocs-material
+ python:
+  install:
+    - requirements: requirements.txt
 
  mkdocs:
-   configuration: mkdocs.yml
+  configuration: mkdocs.yml
