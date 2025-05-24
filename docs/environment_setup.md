@@ -6,7 +6,7 @@ This document outlines the steps for setting up a vLLM development environment w
 
 | Component | Details |
 |-----------|---------|
-| Platform | Windows 11 with WSL2 (Ubuntu) |
+| Platform | Windows 11 with WSL2 (Debian) |
 | GPU | NVIDIA RTX (CUDA 12.8) |
 | Container Runtime | Docker Desktop with WSL2 integration |
 | Build Target | vllm-dev image with QTIP Python fallback code |
@@ -83,7 +83,7 @@ docker run -it --gpus all --rm --ipc=host \
 
 export SETUPTOOLS_SCM_PRETEND_VERSION=0.1
 
-pip install -e .[dev] --no-build-isolation --config-settings editable=false
+pip install -e .[dev] 
 ```
 
 ## Summary

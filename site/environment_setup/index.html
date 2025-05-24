@@ -494,6 +494,30 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#dockerfile-changes-i-made" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dockerfile Changes I Made
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dockerfile Changes I Made">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added-libnuma-dev-to-fix-fastsafetensors-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added libnuma-dev to fix fastsafetensors build
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#docker-image-build" class="md-nav__link">
     <span class="md-ellipsis">
       Docker Image Build
@@ -545,34 +569,10 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#dockerfile-changes-i-made" class="md-nav__link">
-    <span class="md-ellipsis">
-      Dockerfile Changes I Made
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Dockerfile Changes I Made">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
-  <a href="#added-libnuma-dev-to-fix-fastsafetensors-build" class="md-nav__link">
+  <a href="#cuda-part-not-done-yet-needs-better-computer" class="md-nav__link">
     <span class="md-ellipsis">
-      Added libnuma-dev to fix fastsafetensors build
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fixed-cuda-install-failures-in-base-stage" class="md-nav__link">
-    <span class="md-ellipsis">
-      Fixed CUDA install failures in base stage
+      cuda part, not done yet, needs better computer
     </span>
   </a>
   
@@ -580,6 +580,15 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#install-vllm-in-developer-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install vllm in developer mode
+    </span>
+  </a>
   
 </li>
       
@@ -735,6 +744,30 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#dockerfile-changes-i-made" class="md-nav__link">
+    <span class="md-ellipsis">
+      Dockerfile Changes I Made
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dockerfile Changes I Made">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#added-libnuma-dev-to-fix-fastsafetensors-build" class="md-nav__link">
+    <span class="md-ellipsis">
+      Added libnuma-dev to fix fastsafetensors build
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#docker-image-build" class="md-nav__link">
     <span class="md-ellipsis">
       Docker Image Build
@@ -786,34 +819,10 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#dockerfile-changes-i-made" class="md-nav__link">
-    <span class="md-ellipsis">
-      Dockerfile Changes I Made
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Dockerfile Changes I Made">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
-  <a href="#added-libnuma-dev-to-fix-fastsafetensors-build" class="md-nav__link">
+  <a href="#cuda-part-not-done-yet-needs-better-computer" class="md-nav__link">
     <span class="md-ellipsis">
-      Added libnuma-dev to fix fastsafetensors build
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fixed-cuda-install-failures-in-base-stage" class="md-nav__link">
-    <span class="md-ellipsis">
-      Fixed CUDA install failures in base stage
+      cuda part, not done yet, needs better computer
     </span>
   </a>
   
@@ -821,6 +830,15 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#install-vllm-in-developer-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install vllm in developer mode
+    </span>
+  </a>
   
 </li>
       
@@ -883,10 +901,15 @@
 <h2 id="preparation">Preparation<a class="headerlink" href="#preparation" title="Permanent link">&para;</a></h2>
 <h3 id="enable-docker-wsl2-integration">Enable Docker WSL2 Integration<a class="headerlink" href="#enable-docker-wsl2-integration" title="Permanent link">&para;</a></h3>
 <p>Ensure Docker Desktop is installed and WSL2 integration is enabled for the desired distro (e.g., Ubuntu 20.04).</p>
+<h2 id="dockerfile-changes-i-made">Dockerfile Changes I Made<a class="headerlink" href="#dockerfile-changes-i-made" title="Permanent link">&para;</a></h2>
+<h3 id="added-libnuma-dev-to-fix-fastsafetensors-build">Added libnuma-dev to fix fastsafetensors build<a class="headerlink" href="#added-libnuma-dev-to-fix-fastsafetensors-build" title="Permanent link">&para;</a></h3>
+<pre><code class="language-dockerfile">FROM base as dev
+RUN apt-get update &amp;&amp; apt-get install -y libnuma-dev
+</code></pre>
 <h2 id="docker-image-build">Docker Image Build<a class="headerlink" href="#docker-image-build" title="Permanent link">&para;</a></h2>
 <h3 id="1-build-the-dev-image">1. Build the Dev Image<a class="headerlink" href="#1-build-the-dev-image" title="Permanent link">&para;</a></h3>
 <pre><code class="language-bash">DOCKER_BUILDKIT=1 docker build . \
-  -f vllm/docker/Dockerfile \
+  -f docker/Dockerfile \
   --target dev \
   -t vllm-dev
 </code></pre>
@@ -922,21 +945,12 @@
 <li><code>-v $(pwd):/workspace</code>: Mounts the current host directory to /workspace inside the container.</li>
 <li><code>/bin/bash</code>: Starts a bash shell.</li>
 </ul>
-<h2 id="dockerfile-changes-i-made">Dockerfile Changes I Made<a class="headerlink" href="#dockerfile-changes-i-made" title="Permanent link">&para;</a></h2>
-<h3 id="added-libnuma-dev-to-fix-fastsafetensors-build">Added libnuma-dev to fix fastsafetensors build<a class="headerlink" href="#added-libnuma-dev-to-fix-fastsafetensors-build" title="Permanent link">&para;</a></h3>
-<pre><code class="language-dockerfile">FROM base as dev
-RUN apt-get update &amp;&amp; apt-get install -y libnuma-dev
-</code></pre>
-<h3 id="fixed-cuda-install-failures-in-base-stage">Fixed CUDA install failures in base stage<a class="headerlink" href="#fixed-cuda-install-failures-in-base-stage" title="Permanent link">&para;</a></h3>
-<p>Original line (that failed with wheel metadata errors):</p>
-<pre><code class="language-dockerfile">RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --system -r requirements/cuda.txt \
-    --extra-index-url https://download.pytorch.org/whl/cu128
-</code></pre>
-<p>Replaced with standard pip:</p>
-<pre><code class="language-dockerfile">RUN python3 -m pip install --upgrade pip &amp;&amp; \
-    python3 -m pip install -r requirements/cuda.txt \
-    --extra-index-url https://download.pytorch.org/whl/cu128
+<h3 id="cuda-part-not-done-yet-needs-better-computer">cuda part, not done yet, needs better computer<a class="headerlink" href="#cuda-part-not-done-yet-needs-better-computer" title="Permanent link">&para;</a></h3>
+<h2 id="install-vllm-in-developer-mode">Install vllm in developer mode<a class="headerlink" href="#install-vllm-in-developer-mode" title="Permanent link">&para;</a></h2>
+<pre><code>
+export SETUPTOOLS_SCM_PRETEND_VERSION=0.1
+
+pip install -e .[dev] --no-build-isolation --config-settings editable=false
 </code></pre>
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
 <p>This setup allows you to:</p>
@@ -966,7 +980,7 @@ RUN apt-get update &amp;&amp; apt-get install -y libnuma-dev
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 21, 2025 14:52:45">May 21, 2025</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 24, 2025 11:20:49">May 24, 2025</span>
   </span>
 
     
