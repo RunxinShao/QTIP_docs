@@ -2,6 +2,8 @@
 
 This guide walks through the exact steps to integrate the QTIP (Quantization with Trellis Index Packing) quantization method into vLLM's inference engine. By following this, you will be able to run QTIP-compressed models directly with vLLM's fast and scalable infrastructure.
 
+current code branch here: https://github.com/RunxinShao/vllm/tree/add-qtip-inference
+
 ## Step 1: Prepare `quantize_config.json`
 
 Create a QTIP configuration file. Example:
@@ -22,30 +24,39 @@ Create a QTIP configuration file. Example:
 
 This config must be placed in the model folder, or passed via CLI when launching vLLM.
 
-## Step 2: Define QTIPConfig (in quantization_config.py)
+## Step 2: Define QTIPConfig and QTIPLinearMethod (in vllm/model_executor/layers/quantization/qtip.py)
 
 Create a new class to parse the QTIP config:
 
 ```python
+# SPDX-License-Identifier: Apache-2.0
 from typing import Optional
+
 import torch
-from vllm.model_executor.layers.quantization.base_config import QuantizationConfig
+from torch import nn
+
+from vllm._custom_ops import bitshift_codebook, bitshift_gemm
+from vllm.model_executor.layers.linear import LinearMethodBase
+from vllm.model_executor.layers.quantization.base_config import (
+    QuantizationConfig)
+from vllm.model_executor.parameter import PackedvLLMParameter
+
 
 class QTIPConfig(QuantizationConfig):
     """
-    QTIP (Quantization with Trellis Index Packing) static quantization configuration class
+    QTIP (Quantization with Trellis Index Packing) static quantization 
+    configuration class
     """
-    def __init__(
-        self,
-        td_x: int,
-        td_y: int,
-        L: int,
-        K: int,
-        V: int,
-        tlut_bits: int,
-        decode_mode: str,
-        scale: float = 32.0
-    ):
+
+    def __init__(self,
+                 td_x: int,
+                 td_y: int,
+                 L: int,
+                 K: int,
+                 V: int,
+                 tlut_bits: int,
+                 decode_mode: str,
+                 scale: float = 32.0):
         self.td_x = td_x
         self.td_y = td_y
         self.L = L
@@ -62,8 +73,7 @@ class QTIPConfig(QuantizationConfig):
             f"QTIPConfig(td_x={self.td_x}, td_y={self.td_y},"
             f" L={self.L}, K={self.K}, V={self.V},"
             f" tlut_bits={self.tlut_bits}, decode_mode='{self.decode_mode}',"
-            f" scale={self.scale})"
-        )
+            f" scale={self.scale})")
 
     @classmethod
     def get_name(cls) -> str:
@@ -93,48 +103,30 @@ class QTIPConfig(QuantizationConfig):
         scale = cls.get_from_keys_or(config, ["scale"], default=32.0)
         return cls(td_x, td_y, L, K, V, tlut_bits, decode_mode, scale)
 
-    def get_quant_method(self, layer: nn.Module, prefix: str) -> "QTIPLinearMethod":
+    def get_quant_method(self, layer: nn.Module,
+                         prefix: str) -> "QTIPLinearMethod":
         return QTIPLinearMethod(self)
-```
 
-## Step 3: Define QTIPLinearMethod (in method.py)
-
-Implement the quantization method for QTIP:
-
-```python
-from torch import nn
-from torch.nn.parameter import Parameter
-from typing import Optional
-from vllm._custom_ops import bitshift_codebook, bitshift_gemm
-from vllm.model_executor.layers.linear import LinearMethodBase
-from vllm.model_executor.parameter import PackedvLLMParameter
 
 class QTIPLinearMethod(LinearMethodBase):
     """
     QTIP linear layer quantization method
     """
+
     def __init__(self, quant_config: QTIPConfig):
         self.cfg = quant_config
         # Build lookup table (codebook)
-        self.cb = bitshift_codebook(
-            L=self.cfg.L,
-            K=self.cfg.K,
-            V=self.cfg.V,
-            tlut_bits=self.cfg.tlut_bits,
-            decode_mode=self.cfg.decode_mode
-        )
+        self.cb = bitshift_codebook(L=self.cfg.L,
+                                    K=self.cfg.K,
+                                    V=self.cfg.V,
+                                    tlut_bits=self.cfg.tlut_bits,
+                                    decode_mode=self.cfg.decode_mode)
         self.scale = self.cfg.scale
 
-    def create_weights(
-        self,
-        layer: nn.Module,
-        input_size_per_partition: int,
-        output_partition_sizes: list[int],
-        input_size: int,
-        output_size: int,
-        params_dtype: torch.dtype,
-        **extra_weight_attrs
-    ):
+    def create_weights(self, layer: nn.Module, input_size_per_partition: int,
+                       output_partition_sizes: list[int], input_size: int,
+                       output_size: int, params_dtype: torch.dtype,
+                       **extra_weight_attrs):
         output_size_per_partition = sum(output_partition_sizes)
         pack_factor = self.cfg.pack_factor
         assert input_size_per_partition % pack_factor == 0, \
@@ -142,18 +134,21 @@ class QTIPLinearMethod(LinearMethodBase):
         rows = input_size_per_partition // pack_factor
 
         qweight = PackedvLLMParameter(
-            data=torch.empty(rows, output_size_per_partition, dtype=torch.int32),
+            data=torch.empty(rows,
+                             output_size_per_partition,
+                             dtype=torch.int32),
             input_dim=0,
             output_dim=1,
             packed_dim=0,
             packed_factor=pack_factor,
-            weight_loader=lambda p, w: p.data.copy_(w)
-        )
+            weight_loader=lambda p, w: p.data.copy_(w))
         layer.register_parameter("qweight", qweight)
 
         # Register SU and SV
-        layer.register_buffer("SU", torch.ones(input_size_per_partition, dtype=params_dtype))
-        layer.register_buffer("SV", torch.ones(output_size_per_partition, dtype=torch.float32))
+        layer.register_buffer(
+            "SU", torch.ones(input_size_per_partition, dtype=params_dtype))
+        layer.register_buffer(
+            "SV", torch.ones(output_size_per_partition, dtype=torch.float32))
 
     def process_weights_after_loading(self, layer: nn.Module) -> None:
         """
@@ -163,25 +158,23 @@ class QTIPLinearMethod(LinearMethodBase):
         unpacked = self.cb.unpack_trellis(packed, self.cfg.pack_factor)
         layer.qweight.data = unpacked.to(torch.int32)
 
-    def apply(
-        self,
-        layer: nn.Module,
-        x: torch.Tensor,
-        bias: Optional[torch.Tensor] = None
-    ) -> torch.Tensor:
-        output = bitshift_gemm(
-            input=x,
-            trellis=layer.qweight,
-            codebook=self.cb,
-            td_x=self.cfg.td_x,
-            td_y=self.cfg.td_y,
-            scale=self.scale,
-            SU=layer.SU,
-            SV=layer.SV
-        )
+    def apply(self,
+              layer: nn.Module,
+              x: torch.Tensor,
+              bias: Optional[torch.Tensor] = None) -> torch.Tensor:
+        output = bitshift_gemm(input=x,
+                               trellis=layer.qweight,
+                               codebook=self.cb,
+                               td_x=self.cfg.td_x,
+                               td_y=self.cfg.td_y,
+                               scale=self.scale,
+                               SU=layer.SU,
+                               SV=layer.SV)
         if bias is not None:
             output = output + bias
         return output
+
+
 ```
 
 ## Step 4: Define the Bitshift Codebook (in _custom_ops.py)
@@ -189,9 +182,9 @@ class QTIPLinearMethod(LinearMethodBase):
 Implement the `bitshift_codebook` class that handles decoding quantized weights:
 
 ```python
-import torch
-from torch import nn
+
 import numpy as np
+import torch.nn as nn
 
 class bitshift_codebook(nn.Module):
     def __init__(self,
@@ -282,7 +275,8 @@ class bitshift_codebook(nn.Module):
         return unpacked
 ```
 
-## Step 5: Implement Decoding Functions for QTIP
+
+## Step 5: Implement Decoding Functions for QTIP (in _custom_ops.py)
 
 Add these decoding functions to support different modes:
 
@@ -358,8 +352,7 @@ def quantlut_sym(tlut: torch.Tensor, L: int, nbits: int) -> torch.Tensor:
     return out.T.contiguous()
 ```
 
-## Step 6: Implement the Bitshift GEMM Function
-
+## Step 6: Implement the Bitshift GEMM Function (in _custom_ops.py)
 This function performs the matrix multiplication with the quantized weights:
 
 ```python
@@ -418,7 +411,7 @@ def bitshift_gemm(
     return (out * SV * scale).to(input.dtype)  # ← SV corrects output
 ```
 
-## Step 7: Register QTIP in the Quantization Methods Registry
+## Step 7: Register QTIP in the Quantization Methods Registry(in vllm/model_executor/layers/quantization/__init__.py)
 
 Update the `__init__.py` file in the quantization directory to include QTIP:
 
@@ -461,23 +454,127 @@ QuantizationMethods = Literal[
     "torchao",
 ]
 QUANTIZATION_METHODS: list[str] = list(get_args(QuantizationMethods))
-```
 
-And update the `get_quantization_config` function to include the QTIP config class:
+# The customized quantization methods which will be added to this dict.
+_CUSTOMIZED_METHOD_TO_QUANT_CONFIG = {}
 
-```python
+
+def register_quantization_config(quantization: str):
+    """Register a customized vllm quantization config.
+
+    When a quantization method is not supported by vllm, you can register a customized
+    quantization config to support it.
+
+    Args:
+        quantization (str): The quantization method name.
+
+    Examples:
+        >>> from vllm.model_executor.layers.quantization import register_quantization_config
+        >>> from vllm.model_executor.layers.quantization import get_quantization_config
+        >>> from vllm.model_executor.layers.quantization.base_config import QuantizationConfig
+        >>>
+        >>> @register_quantization_config("my_quant")
+        ... class MyQuantConfig(QuantizationConfig):
+        ...     pass
+        >>>
+        >>> get_quantization_config("my_quant")
+        <class 'MyQuantConfig'>
+    """  # noqa: E501
+
+    def _wrapper(quant_config_cls):
+        if quantization in QUANTIZATION_METHODS:
+            raise ValueError(
+                f"The quantization method `{quantization}` is already exists.")
+        if not issubclass(quant_config_cls, QuantizationConfig):
+            raise ValueError("The quantization config must be a subclass of "
+                             "`QuantizationConfig`.")
+        _CUSTOMIZED_METHOD_TO_QUANT_CONFIG[quantization] = quant_config_cls
+        QUANTIZATION_METHODS.append(quantization)
+        return quant_config_cls
+
+    return _wrapper
+
+
 def get_quantization_config(quantization: str) -> type[QuantizationConfig]:
-    # ... existing imports ...
+    if quantization not in QUANTIZATION_METHODS:
+        raise ValueError(f"Invalid quantization method: {quantization}")
+
+    # lazy import to avoid triggering `torch.compile` too early
+    from vllm.model_executor.layers.quantization.quark.quark import QuarkConfig
+
+    from .aqlm import AQLMConfig
+    from .awq import AWQConfig
+    from .awq_marlin import AWQMarlinConfig
+    from .bitblas import BitBLASConfig
+    from .bitsandbytes import BitsAndBytesConfig
+    from .compressed_tensors.compressed_tensors import (  # noqa: E501
+        CompressedTensorsConfig)
+    from .deepspeedfp import DeepSpeedFPConfig
+    from .experts_int8 import ExpertsInt8Config
+    from .fbgemm_fp8 import FBGEMMFp8Config
+    from .fp8 import Fp8Config
+    from .gguf import GGUFConfig
+    from .gptq import GPTQConfig
+    from .gptq_bitblas import GPTQBitBLASConfig
+    from .gptq_marlin import GPTQMarlinConfig
+    from .gptq_marlin_24 import GPTQMarlin24Config
+    from .hqq_marlin import HQQMarlinConfig
+    from .ipex_quant import IPEXConfig
+    from .marlin import MarlinConfig
+    from .modelopt import ModelOptFp8Config, ModelOptNvFp4Config
+    from .moe_wna16 import MoeWNA16Config
+    from .neuron_quant import NeuronQuantConfig
+    from .ptpc_fp8 import PTPCFp8Config
+    from .qqq import QQQConfig
     from .qtip import QTIPConfig
+    from .torchao import TorchAOConfig
+    from .tpu_int8 import Int8TpuConfig
     
     method_to_config: dict[str, type[QuantizationConfig]] = {
-        # ... existing entries ...
+        "aqlm": AQLMConfig,
+        "awq": AWQConfig,
+        "deepspeedfp": DeepSpeedFPConfig,
+        "tpu_int8": Int8TpuConfig,
+        "fp8": Fp8Config,
+        "fbgemm_fp8": FBGEMMFp8Config,
+        "modelopt": ModelOptFp8Config,
+        "nvfp4": ModelOptNvFp4Config,
+        "marlin": MarlinConfig,
+        "bitblas": BitBLASConfig,
+        "gguf": GGUFConfig,
+        "gptq_marlin_24": GPTQMarlin24Config,
+        "gptq_marlin": GPTQMarlinConfig,
+        "gptq_bitblas": GPTQBitBLASConfig,
+        "awq_marlin": AWQMarlinConfig,
+        "gptq": GPTQConfig,
+        "compressed-tensors": CompressedTensorsConfig,
+        "bitsandbytes": BitsAndBytesConfig,
+        "ptpc_fp8": PTPCFp8Config,
+        "qqq": QQQConfig,
+        "hqq": HQQMarlinConfig,
+        "experts_int8": ExpertsInt8Config,
+        "neuron_quant": NeuronQuantConfig,
+        "ipex": IPEXConfig,
+        "quark": QuarkConfig,
+        "moe_wna16": MoeWNA16Config,
         "qtip": QTIPConfig,
+        "torchao": TorchAOConfig,
     }
-    # ... rest of the function ...
+    # Update the `method_to_config` with customized quantization methods.
+    method_to_config.update(_CUSTOMIZED_METHOD_TO_QUANT_CONFIG)
+
+    return method_to_config[quantization]
+
+
+__all__ = [
+    "QuantizationConfig",
+    "QuantizationMethods",
+    "get_quantization_config",
+    "QUANTIZATION_METHODS",
+]
 ```
 
-## Step 8: Test the Integration
+## Step 8: Test the Integration (in tests/kernels/quantization/test_qtip.py)
 
 Create a test file to validate your implementation:
 
@@ -486,74 +583,85 @@ Create a test file to validate your implementation:
 
 import pytest
 import torch
-from vllm._custom_ops import bitshift_codebook, bitshift_gemm
 
-# Test parameters
-BATCH_SIZES = [1, 4]
-HIDDEN_SIZES = [2048, 4096]
-OUT_SIZES = [4096, 11008]  # Common output sizes in LLMs
-L_VALUES = [16]  # Number of codebooks
-K_VALUES = [2]  # Number of centroids per codebook
-V_VALUES = [1, 2]  # Number of vectors per centroid
-DECODE_MODES = ["1mad", "3inst", "quantlut"]  # Different decoding modes
-TD_VALUES = [(16, 16)]  # Trellis dimensions
+from vllm import _custom_ops as ops
 
-@pytest.mark.parametrize("batch_size", BATCH_SIZES)
+HIDDEN_SIZES = [4096]
+OUT_SIZES = [4096]
+L_VALUES = [16]
+K_VALUES = [3]
+V_VALUES = [1]
+
+
 @pytest.mark.parametrize("hidden_size", HIDDEN_SIZES)
 @pytest.mark.parametrize("out_size", OUT_SIZES)
 @pytest.mark.parametrize("L", L_VALUES)
 @pytest.mark.parametrize("K", K_VALUES)
 @pytest.mark.parametrize("V", V_VALUES)
-@pytest.mark.parametrize("decode_mode", DECODE_MODES)
-@pytest.mark.parametrize("td", TD_VALUES)
-def test_qtip_integration(batch_size, hidden_size, out_size, L, K, V, decode_mode, td):
-    """Test the QTIP integration in vLLM."""
-    td_x, td_y = td
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
-    # Skip test if decode_mode requires specific conditions
-    if decode_mode == "quantlut" and not torch.cuda.is_available():
-        pytest.skip("quantlut mode requires CUDA")
-    
-    if decode_mode in ["1mad", "3inst"] and V != 1:
-        pytest.skip(f"{decode_mode} decode mode requires V=1")
-    
-    # Create the codebook
-    tlut = None
-    if decode_mode == "quantlut":
-        tlut = torch.randn(2**L, device=device, dtype=torch.float16)
-    
-    codebook = bitshift_codebook(
+def test_bitshift_codebook(hidden_size, out_size, L, K, V):
+    td_x, td_y = 8, 8
+    block_size = td_x * td_y
+    row_blocks = hidden_size // td_x
+    col_blocks = out_size // td_y
+    num_blocks = row_blocks * col_blocks
+
+    codebook = ops.bitshift_codebook(
         L=L,
         K=K,
         V=V,
-        tlut_bits=16,
-        decode_mode=decode_mode,
-        tlut=tlut
+        tlut_bits=L,
+        decode_mode="lut"
     )
-    
-    # Prepare input tensor
-    x = torch.randn((batch_size, hidden_size), device=device, dtype=torch.float16)
-    
-    # Create the trellis (quantized weights)
-    # In a real scenario, these would be the actual quantized weights
-    num_blocks = (hidden_size // td_x) * (out_size // td_y)
+
+    encoded = torch.randint(
+        0, 2**L,
+        (num_blocks, block_size),
+        device='cpu', 
+        dtype=torch.long
+    )
+
+    decoded = codebook.recons(encoded)
+
+    assert decoded.shape == (V, num_blocks, block_size)
+
+
+@pytest.mark.parametrize("hidden_size", HIDDEN_SIZES)
+@pytest.mark.parametrize("out_size", OUT_SIZES)
+@pytest.mark.parametrize("L", L_VALUES)
+@pytest.mark.parametrize("K", K_VALUES)
+@pytest.mark.parametrize("V", V_VALUES)
+def test_bitshift_gemm(hidden_size, out_size, L, K, V):
+    td_x = 8
+    td_y = 8
     block_size = td_x * td_y
+
+    m = hidden_size
+    n = out_size
+    row_blocks = m // td_x
+    col_blocks = n // td_y
+    num_blocks = row_blocks * col_blocks
+    
+    codebook = ops.bitshift_codebook(
+        L=L,
+        K=K,
+        V=V,
+        tlut_bits=L,
+        decode_mode="lut"
+    )
+
+    x = torch.rand((1, m), device='cpu', dtype=torch.float16)
     
     trellis = torch.randint(
-        low=0, 
-        high=2**L,
-        size=(num_blocks, block_size),
-        device=device,
-        dtype=torch.int32
+        0, 2 ** L,
+        (num_blocks, block_size),
+        device='cpu',
+        dtype=torch.long
     )
-    
-    # Create scale factors
-    SU = torch.ones(hidden_size, device=device, dtype=torch.float16)
-    SV = torch.ones(out_size, device=device, dtype=torch.float32)
-    
-    # Test the matrix multiplication
-    output = bitshift_gemm(
+
+    SU = torch.ones(m, device='cpu', dtype=torch.float16)
+    SV = torch.ones(n, device='cpu', dtype=torch.float16)
+
+    output = ops.bitshift_gemm(
         input=x,
         trellis=trellis,
         codebook=codebook,
@@ -563,28 +671,139 @@ def test_qtip_integration(batch_size, hidden_size, out_size, L, K, V, decode_mod
         SU=SU,
         SV=SV
     )
+
+    assert output.shape == (1, n)
+```
+## Step 8: Test the Config (in tests\quantization\test_qtip_config.py)
+```python
+# SPDX-License-Identifier: Apache-2.0
+"""Tests for QTIP quantization configuration.
+
+Run `pytest tests/quantization/test_qtip_config.py`.
+"""
+
+import pytest
+import torch
+
+from vllm.model_executor.layers.quantization.qtip import (QTIPConfig,
+                                                          QTIPLinearMethod)
+
+
+def test_qtip_config_creation():
+    """Test QTIP configuration creation and validation."""
     
-    # Verify the output
-    assert output.shape == (batch_size, out_size)
-    assert torch.all(torch.isfinite(output))
+    config = QTIPConfig(td_x=8,
+                        td_y=8,
+                        L=16,
+                        K=2,
+                        V=2,
+                        tlut_bits=16,
+                        decode_mode="1mad",
+                        scale=32.0)
+
+    
+    assert config.td_x == 8
+    assert config.td_y == 8
+    assert config.L == 16
+    assert config.K == 2
+    assert config.V == 2
+    assert config.tlut_bits == 16
+    assert config.decode_mode == "1mad"
+    assert config.scale == 32.0
+    assert config.pack_factor == 64  # td_x * td_y
+
+    
+    config_dict = {
+        "td_x": 8,
+        "td_y": 8,
+        "L": 16,
+        "K": 2,
+        "V": 2,
+        "tlut_bits": 16,
+        "decode_mode": "1mad",
+        "scale": 32.0
+    }
+    config_from_dict = QTIPConfig.from_config(config_dict)
+    assert config_from_dict.td_x == config.td_x
+    assert config_from_dict.td_y == config.td_y
+    assert config_from_dict.L == config.L
+    assert config_from_dict.K == config.K
+    assert config_from_dict.V == config.V
+    assert config_from_dict.tlut_bits == config.tlut_bits
+    assert config_from_dict.decode_mode == config.decode_mode
+    assert config_from_dict.scale == config.scale
+
+
+def test_qtip_config_methods():
+    """Test QTIP configuration methods."""
+    config = QTIPConfig(td_x=8,
+                        td_y=8,
+                        L=16,
+                        K=2,
+                        V=2,
+                        tlut_bits=16,
+                        decode_mode="1mad",
+                        scale=32.0)
+
+   
+    assert config.get_name() == "qtip"
+
+   
+    assert torch.half in config.get_supported_act_dtypes()
+
+    
+    assert config.get_min_capability() == 60
+
+    
+    assert "quantize_config.json" in config.get_config_filenames()
+
+
+
+
+# needs cuda, currently using cpu
+# @pytest.mark.parametrize(
+#     "model",
+#     [
+#         "meta-llama/Llama-2-7b-hf",  
+#     ])
+# def test_qtip_inference(vllm_runner, model, monkeypatch):
+#     """Test inference with QTIP quantization."""
+    
+#     monkeypatch.setenv("VLLM_USE_V1", "0")
+
+    
+#     qtip_config = {
+#         "quant_method": "qtip",
+#         "td_x": 8,
+#         "td_y": 8,
+#         "L": 16,
+#         "K": 2,
+#         "V": 2,
+#         "tlut_bits": 16,
+#         "decode_mode": "1mad",
+#         "scale": 32.0
+#     }
+
+   
+#     with vllm_runner(model_name=model,
+#                      quantization="qtip",
+#                      enforce_eager=True,
+#                      ) as llm:
+        
+#         model = llm.model.llm_engine.model_executor.driver_worker.model_runner.model
+#         layer = model.model.layers[0]
+
+#         assert isinstance(layer.self_attn.qkv_proj.quant_method,
+#                           QTIPLinearMethod)
+
+#         output = llm.generate_greedy("Hello my name is", max_tokens=20)
+#         assert output
+
 ```
 
-## Step 9: Run with vLLM
-
-✅ Run with `python -m vllm.entrypoints.openai.api_server --quantize_config quantize_config.json`
-
-✅ Load a model compressed with QTIP
-
-✅ Send a sample prompt
-
-✅ Verify decode speed and correctness
-
-This implementation provides fully functional QTIP quantization in vLLM, including:
-
-- Support for multiple decoding modes (1-MAD, 3-instruction, lookup table)
-- Configurable quantization parameters (L, K, V, bits, etc.)
-- Proper scaling with per-tensor and per-channel scaling factors
-- Integration with vLLM's existing quantization framework
-- Trellis-based block compression for efficient storage
-
-You can further optimize and extend this implementation based on your specific needs.
+## Step 9: Testing command (in the workspace of docker)
+```python
+pip install -r requirements/dev.txt
+pytest tests/kernels/quantization/test_qtip.py
+pytest tests/quantization/test_qtip_config.py
+```

@@ -15,7 +15,7 @@
         <link rel="next" href="../1_decoding_methods/">
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
     
     
@@ -717,15 +717,15 @@
 
 
 
-<h1 id="trellis-quantization-tcq">Trellis Quantization (TCQ)</h1>
+<h1 id="trellis-quantization-tcq">Trellis Quantization (TCQ)<a class="headerlink" href="#trellis-quantization-tcq" title="Permanent link">&para;</a></h1>
 <p>Trellis-Coded Quantization (TCQ) is a structured quantization technique that compresses a sequence of values by finding an optimal path through a constrained state machine known as a trellis. Unlike scalar quantization, which treats each value independently, TCQ jointly optimizes the quantization of a sequence to minimize total distortion.</p>
 <p>This method is especially effective in compressing neural network weight matrices, where block-level patterns can be exploited for better accuracy and compression.</p>
 <hr />
-<h2 id="1-motivation">1. Motivation</h2>
+<h2 id="1-motivation">1. Motivation<a class="headerlink" href="#1-motivation" title="Permanent link">&para;</a></h2>
 <p>Traditional quantization, such as uniform scalar quantization, minimizes local error by rounding each value independently. However, this can lead to suboptimal results when the data has structure or correlation, as in neural network weights.</p>
 <p>TCQ addresses this by encoding an entire block or sequence of values together, enforcing path constraints via a trellis structure. The global sequence-level optimization leads to significantly lower average distortion.</p>
 <hr />
-<h2 id="2-the-structure-of-a-trellis">2. The Structure of a Trellis</h2>
+<h2 id="2-the-structure-of-a-trellis">2. The Structure of a Trellis<a class="headerlink" href="#2-the-structure-of-a-trellis" title="Permanent link">&para;</a></h2>
 <p>A trellis consists of:</p>
 <ul>
 <li><strong>States</strong>: Each representing a configuration at a timestep</li>
@@ -734,14 +734,14 @@
 </ul>
 <p>Each input value is not assigned a quantization index independently. Instead, the entire sequence is represented as a path in the trellis, and the quantized values are determined by that path.</p>
 <hr />
-<h2 id="3-quantization-as-a-path-finding-problem">3. Quantization as a Path-Finding Problem</h2>
+<h2 id="3-quantization-as-a-path-finding-problem">3. Quantization as a Path-Finding Problem<a class="headerlink" href="#3-quantization-as-a-path-finding-problem" title="Permanent link">&para;</a></h2>
 <p>Given:
 - A quantization codebook: e.g., <code>C = [-1.0, -0.5, 0.0, 0.5, 1.0]</code>
 - A sequence of input values: e.g., <code>[0.4, -0.7, 0.1, 0.3]</code>
 - A state transition rule: e.g., each state can move to 2 of the next layer’s states</p>
 <p>Goal: Find the path through the trellis that results in quantized values minimizing the total squared error to the input.</p>
 <hr />
-<h2 id="4-dynamic-programming-viterbi-algorithm">4. Dynamic Programming (Viterbi Algorithm)</h2>
+<h2 id="4-dynamic-programming-viterbi-algorithm">4. Dynamic Programming (Viterbi Algorithm)<a class="headerlink" href="#4-dynamic-programming-viterbi-algorithm" title="Permanent link">&para;</a></h2>
 <p>The Viterbi algorithm is used to efficiently find the minimum-error path:</p>
 <ol>
 <li>At each time step <code>t</code>, for each possible state <code>s</code>:</li>
@@ -757,7 +757,7 @@
 </li>
 </ol>
 <hr />
-<h2 id="5-example">5. Example</h2>
+<h2 id="5-example">5. Example<a class="headerlink" href="#5-example" title="Permanent link">&para;</a></h2>
 <p>Suppose:</p>
 <ul>
 <li>Codebook: <code>[-1, 0, 1]</code></li>
@@ -773,7 +773,7 @@ Path B: [1, 0, 0] → Error = (0.2-1)^2 + (-0.4-0)^2 + (0.5-0)^2 = 0.64 + 0.16 +
 Path C: [0, 0, 1] → Error = 0.04 + 0.16 + 0.25 = 0.45 ✔ (same as scalar)</p>
 <p>Then Viterbi will choose the best path with valid state transitions and minimal error.</p>
 <hr />
-<h2 id="6-encoding-how-tcq-paths-are-represented">6. Encoding: How TCQ Paths Are Represented</h2>
+<h2 id="6-encoding-how-tcq-paths-are-represented">6. Encoding: How TCQ Paths Are Represented<a class="headerlink" href="#6-encoding-how-tcq-paths-are-represented" title="Permanent link">&para;</a></h2>
 <p>Each path is encoded as a binary stream representing:</p>
 <ul>
 <li>The initial state</li>
@@ -782,7 +782,7 @@ Path C: [0, 0, 1] → Error = 0.04 + 0.16 + 0.25 = 0.45 ✔ (same as scalar)</p>
 <p>This allows compression of N quantized values into fewer bits than scalar quantization.</p>
 <p>Example: With K=2 branches and N=8 values, only log2(K^N) = N bits are needed.</p>
 <hr />
-<h2 id="7-bitshift-trellis-in-qtip">7. Bitshift Trellis in QTIP</h2>
+<h2 id="7-bitshift-trellis-in-qtip">7. Bitshift Trellis in QTIP<a class="headerlink" href="#7-bitshift-trellis-in-qtip" title="Permanent link">&para;</a></h2>
 <p>QTIP uses a specialized version of TCQ called the <strong>Bitshift Trellis</strong>, where:</p>
 <ul>
 <li>Each state is represented by an L-bit integer</li>
@@ -804,6 +804,27 @@ New state: (011011000001 &lt;&lt; 1) | 1 = 110110000011</p>
 
 
 
+  
+    
+  
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 21, 2025 14:52:45">May 21, 2025</span>
+  </span>
+
+    
+    
+    
+    
+  </aside>
 
 
 
@@ -819,23 +840,10 @@ New state: (011011000001 &lt;&lt; 1) | 1 = 110110000011</p>
         
       </main>
       
-        <footer class="md-footer">
-  
-  <div class="md-footer-meta md-typeset">
-    <div class="md-footer-meta__inner md-grid">
-      <div class="md-copyright">
-  
-  
-    Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
-    </a>
-  
-</div>
-      
-    </div>
-  </div>
-</footer>
+        <p style="text-align: center; font-size: 1.3em; color: #777;">
+  This documentation was created by <strong>Runxin Shao</strong> and last updated on
+  <span style="white-space: nowrap;"></span>
+</p>
       
     </div>
     <div class="md-dialog" data-md-component="dialog">

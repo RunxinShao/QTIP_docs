@@ -15,7 +15,7 @@
         <link rel="next" href="../environment_setup/">
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
     
     
@@ -957,11 +957,11 @@
 
 
 
-<h1 id="qtip-codebase">QTIP codebase</h1>
+<h1 id="qtip-codebase">QTIP codebase<a class="headerlink" href="#qtip-codebase" title="Permanent link">&para;</a></h1>
 <p>This document provides a structured overview of the QTIP implementation and its decoding, performance, and integration details.</p>
 <hr />
-<h2 id="1-core-components-and-methods">1. Core Components and Methods</h2>
-<h3 id="11-bitshiftcodebook">1.1 BitshiftCodebook</h3>
+<h2 id="1-core-components-and-methods">1. Core Components and Methods<a class="headerlink" href="#1-core-components-and-methods" title="Permanent link">&para;</a></h2>
+<h3 id="11-bitshiftcodebook">1.1 BitshiftCodebook<a class="headerlink" href="#11-bitshiftcodebook" title="Permanent link">&para;</a></h3>
 <p><em>Location: <code>bitshift.py</code></em></p>
 <p>This module handles all aspects of quantization, trellis management, and decoding logic.</p>
 <p><strong>Key Methods:</strong>
@@ -998,7 +998,7 @@
 </li>
 </ul>
 <hr />
-<h3 id="12-bitshiftlinear">1.2 BitshiftLinear</h3>
+<h3 id="12-bitshiftlinear">1.2 BitshiftLinear<a class="headerlink" href="#12-bitshiftlinear" title="Permanent link">&para;</a></h3>
 <p><em>Location: <code>bitshift.py</code></em></p>
 <p>This class defines a linear layer that supports fast matrix multiplication using compressed weights.</p>
 <p><strong>Key Methods:</strong>
@@ -1019,7 +1019,7 @@
 </li>
 </ul>
 <hr />
-<h3 id="13-quantizedlinear">1.3 QuantizedLinear</h3>
+<h3 id="13-quantizedlinear">1.3 QuantizedLinear<a class="headerlink" href="#13-quantizedlinear" title="Permanent link">&para;</a></h3>
 <p><em>Location: <code>bitshift.py</code></em></p>
 <p>Defines a wrapper around <code>BitshiftLinear</code> with support for gradient checkpointing.</p>
 <p><strong>Key Methods:</strong>
@@ -1030,9 +1030,9 @@
   Main forward pass. Supports gradient checkpointing for memory efficiency.</li>
 </ul>
 <hr />
-<h2 id="2-decoding-modes">2. Decoding Modes</h2>
+<h2 id="2-decoding-modes">2. Decoding Modes<a class="headerlink" href="#2-decoding-modes" title="Permanent link">&para;</a></h2>
 <p>QTIP supports multiple decoding modes, each balancing speed, accuracy, and memory differently.</p>
-<h3 id="21-available-modes">2.1 Available Modes</h3>
+<h3 id="21-available-modes">2.1 Available Modes<a class="headerlink" href="#21-available-modes" title="Permanent link">&para;</a></h3>
 <ul>
 <li>
 <p><code>'lut'</code><br />
@@ -1060,21 +1060,21 @@
 </li>
 </ul>
 <hr />
-<h2 id="3-performance-optimization">3. Performance Optimization</h2>
-<h3 id="31-cuda-implementation">3.1 CUDA Implementation</h3>
+<h2 id="3-performance-optimization">3. Performance Optimization<a class="headerlink" href="#3-performance-optimization" title="Permanent link">&para;</a></h2>
+<h3 id="31-cuda-implementation">3.1 CUDA Implementation<a class="headerlink" href="#31-cuda-implementation" title="Permanent link">&para;</a></h3>
 <p>QTIP includes CUDA kernels for:
 - Bitshift trellis decoding
 - Matrix multiplication using <code>BitshiftLinearKernelAG</code>
 - Custom ops via PyTorch extensions</p>
-<h3 id="32-memory-optimization-techniques">3.2 Memory Optimization Techniques</h3>
+<h3 id="32-memory-optimization-techniques">3.2 Memory Optimization Techniques<a class="headerlink" href="#32-memory-optimization-techniques" title="Permanent link">&para;</a></h3>
 <p><strong>Trellis Packing</strong>
 - <code>pack_trellis()</code>: Packs trellis into a compact bit format.
 - <code>unpack_trellis()</code>: Reconstructs full trellis from packed form.</p>
 <p><strong>Weight Caching</strong>
 - <code>cache_hatW(...)</code>: Caches decoded weights to avoid recomputation during repeated inference.</p>
 <hr />
-<h2 id="4-best-practices">4. Best Practices</h2>
-<h3 id="parameter-selection">Parameter Selection</h3>
+<h2 id="4-best-practices">4. Best Practices<a class="headerlink" href="#4-best-practices" title="Permanent link">&para;</a></h2>
+<h3 id="parameter-selection">Parameter Selection<a class="headerlink" href="#parameter-selection" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -1101,7 +1101,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="mode-selection">Mode Selection</h3>
+<h3 id="mode-selection">Mode Selection<a class="headerlink" href="#mode-selection" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -1124,28 +1124,28 @@
 </tr>
 </tbody>
 </table>
-<h3 id="block-size-selection">Block Size Selection</h3>
+<h3 id="block-size-selection">Block Size Selection<a class="headerlink" href="#block-size-selection" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>td_x</code>, <code>td_y</code> should be powers of 2</li>
 <li>Common sizes: 16, 32, 64</li>
 <li>Larger blocks improve compression but increase computation</li>
 </ul>
 <hr />
-<h2 id="5-important-notes">5. Important Notes</h2>
-<h3 id="performance-considerations">Performance Considerations</h3>
+<h2 id="5-important-notes">5. Important Notes<a class="headerlink" href="#5-important-notes" title="Permanent link">&para;</a></h2>
+<h3 id="performance-considerations">Performance Considerations<a class="headerlink" href="#performance-considerations" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Different decode modes impact latency and precision</li>
 <li>Use CUDA kernels for best speed</li>
 <li>Block sizes affect cache efficiency</li>
 </ul>
-<h3 id="accuracy-considerations">Accuracy Considerations</h3>
+<h3 id="accuracy-considerations">Accuracy Considerations<a class="headerlink" href="#accuracy-considerations" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Quantization affects model accuracy</li>
 <li>Post-quantization fine-tuning may be necessary</li>
 <li>Mixed-precision training and inference can help recover accuracy</li>
 </ul>
 <hr />
-<h2 id="citation">Citation</h2>
+<h2 id="citation">Citation<a class="headerlink" href="#citation" title="Permanent link">&para;</a></h2>
 <p>@inproceedings{tseng2024qtip,
     title={{QTIP}: Quantization with Trellises and Incoherence Processing},
     author={Albert Tseng and Qingyao Sun and David Hou and Christopher De Sa},
@@ -1159,6 +1159,27 @@
 
 
 
+  
+    
+  
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 21, 2025 14:52:45">May 21, 2025</span>
+  </span>
+
+    
+    
+    
+    
+  </aside>
 
 
 
@@ -1174,23 +1195,10 @@
         
       </main>
       
-        <footer class="md-footer">
-  
-  <div class="md-footer-meta md-typeset">
-    <div class="md-footer-meta__inner md-grid">
-      <div class="md-copyright">
-  
-  
-    Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
-    </a>
-  
-</div>
-      
-    </div>
-  </div>
-</footer>
+        <p style="text-align: center; font-size: 1.3em; color: #777;">
+  This documentation was created by <strong>Runxin Shao</strong> and last updated on
+  <span style="white-space: nowrap;"></span>
+</p>
       
     </div>
     <div class="md-dialog" data-md-component="dialog">

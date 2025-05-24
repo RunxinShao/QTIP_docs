@@ -17,13 +17,23 @@ This document outlines the steps for setting up a vLLM development environment w
 
 Ensure Docker Desktop is installed and WSL2 integration is enabled for the desired distro (e.g., Ubuntu 20.04).
 
+## Dockerfile Changes I Made
+
+### Added libnuma-dev to fix fastsafetensors build
+
+```dockerfile
+FROM base as dev
+RUN apt-get update && apt-get install -y libnuma-dev
+```
+
+
 ## Docker Image Build
 
 ### 1. Build the Dev Image
 
 ```bash
 DOCKER_BUILDKIT=1 docker build . \
-  -f vllm/docker/Dockerfile \
+  -f docker/Dockerfile \
   --target dev \
   -t vllm-dev
 ```
@@ -66,31 +76,14 @@ docker run -it --gpus all --rm --ipc=host \
 - `-v $(pwd):/workspace`: Mounts the current host directory to /workspace inside the container.
 - `/bin/bash`: Starts a bash shell.
 
-## Dockerfile Changes I Made
 
-### Added libnuma-dev to fix fastsafetensors build
-
-```dockerfile
-FROM base as dev
-RUN apt-get update && apt-get install -y libnuma-dev
+### cuda part, not done yet, needs better computer
+## Install vllm in developer mode
 ```
 
-### Fixed CUDA install failures in base stage
+export SETUPTOOLS_SCM_PRETEND_VERSION=0.1
 
-Original line (that failed with wheel metadata errors):
-
-```dockerfile
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --system -r requirements/cuda.txt \
-    --extra-index-url https://download.pytorch.org/whl/cu128
-```
-
-Replaced with standard pip:
-
-```dockerfile
-RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install -r requirements/cuda.txt \
-    --extra-index-url https://download.pytorch.org/whl/cu128
+pip install -e .[dev] --no-build-isolation --config-settings editable=false
 ```
 
 ## Summary

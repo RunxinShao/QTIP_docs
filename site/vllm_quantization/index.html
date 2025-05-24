@@ -15,7 +15,7 @@
         <link rel="next" href="../vllm_integration_steps/">
       
       
-      <link rel="icon" href="../assets/images/favicon.png">
+      <link rel="icon" href="../img/favicon.ico">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
     
     
@@ -550,21 +550,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. Layer Replacement Flow">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-by-step-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      Step-by-Step Flow
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -574,63 +559,12 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Custom Layer Logic">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#for-gptq" class="md-nav__link">
-    <span class="md-ellipsis">
-      For GPTQ:
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-qtip-this-would-become" class="md-nav__link">
-    <span class="md-ellipsis">
-      For QTIP, this would become:
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
   <a href="#4-where-to-hook-qtip" class="md-nav__link">
     <span class="md-ellipsis">
       4. Where to Hook QTIP
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-implementation-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Implementation Example
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-extending-for-dynamic-decode-mode-selection" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Extending for Dynamic Decode Mode Selection
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-performance-considerations" class="md-nav__link">
-    <span class="md-ellipsis">
-      7. Performance Considerations
     </span>
   </a>
   
@@ -741,21 +675,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. Layer Replacement Flow">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-by-step-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      Step-by-Step Flow
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -765,63 +684,12 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Custom Layer Logic">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#for-gptq" class="md-nav__link">
-    <span class="md-ellipsis">
-      For GPTQ:
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#for-qtip-this-would-become" class="md-nav__link">
-    <span class="md-ellipsis">
-      For QTIP, this would become:
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
   <a href="#4-where-to-hook-qtip" class="md-nav__link">
     <span class="md-ellipsis">
       4. Where to Hook QTIP
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-implementation-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      5. Implementation Example
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-extending-for-dynamic-decode-mode-selection" class="md-nav__link">
-    <span class="md-ellipsis">
-      6. Extending for Dynamic Decode Mode Selection
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-performance-considerations" class="md-nav__link">
-    <span class="md-ellipsis">
-      7. Performance Considerations
     </span>
   </a>
   
@@ -843,18 +711,17 @@
 
 
 
-<h1 id="understanding-quantization-in-vllm">Understanding Quantization in vLLM</h1>
+<h1 id="understanding-quantization-in-vllm">Understanding Quantization in vLLM<a class="headerlink" href="#understanding-quantization-in-vllm" title="Permanent link">&para;</a></h1>
 <p>This section explains how quantization is implemented in vLLM, focusing on the architecture of weight-only post-training quantization (PTQ). We analyze how methods like GPTQ and AWQ are supported, and how QTIP can leverage the same modularity to integrate efficiently.</p>
-<hr />
-<h2 id="1-quantization-architecture-in-vllm">1. Quantization Architecture in vLLM</h2>
-<p>vLLM adopts a <strong>plugin-style quantization system</strong>. Each quantization method is defined by:</p>
+<h2 id="1-quantization-architecture-in-vllm">1. Quantization Architecture in vLLM<a class="headerlink" href="#1-quantization-architecture-in-vllm" title="Permanent link">&para;</a></h2>
+<p>vLLM adopts a plugin-style quantization system. Each quantization method is defined by:</p>
 <ul>
 <li>A configuration class (<code>QuantizationConfig</code>)</li>
-<li>A method class (<code>QuantizationMethod</code>)</li>
-<li>A custom layer implementation (<code>QuantizedLinear</code>, etc.)</li>
+<li>A method class (<code>QuantizeMethodBase</code>) </li>
+<li>A custom layer implementation (e.g. <code>QuantizedLinear</code>)</li>
 </ul>
 <p>This system is built to allow different quantization schemes to be swapped in and configured without changing model code.</p>
-<h3 id="11-configuration-entry-point-quantize_configjson">1.1 Configuration Entry Point: <code>quantize_config.json</code></h3>
+<h3 id="11-configuration-entry-point-quantize_configjson">1.1 Configuration Entry Point: quantize_config.json<a class="headerlink" href="#11-configuration-entry-point-quantize_configjson" title="Permanent link">&para;</a></h3>
 <p>Users specify their quantization settings via a JSON config file. Example for GPTQ:</p>
 <pre><code class="language-json">{
   &quot;quant_method&quot;: &quot;gptq&quot;,
@@ -864,8 +731,8 @@
   &quot;sym&quot;: true
 }
 </code></pre>
-<p>This config is loaded and passed to the appropriate <code>QuantizationConfig</code> subclass.</p>
-<h3 id="12-quantizationconfig-and-method-class">1.2 QuantizationConfig and Method Class</h3>
+<p>This config is loaded and passed to the appropriate <code>QuantizationConfig</code> subclass through <code>get_quantization_config()</code> in <code>model_loader/weight_utils.py</code>.</p>
+<h3 id="12-quantizationconfig-and-method-class">1.2 QuantizationConfig and Method Class<a class="headerlink" href="#12-quantizationconfig-and-method-class" title="Permanent link">&para;</a></h3>
 <p>Every method implements two key components:</p>
 <table>
 <thead>
@@ -876,53 +743,54 @@
 </thead>
 <tbody>
 <tr>
-<td><code>QuantizationConfig</code></td>
+<td>QuantizationConfig</td>
 <td>Parses config file and holds parameters</td>
 </tr>
 <tr>
-<td><code>QuantizationMethod</code></td>
+<td>QuantizeMethodBase</td>
 <td>Applies layer substitution and post-load processing</td>
 </tr>
 </tbody>
 </table>
-<p><strong>GPTQ Example</strong></p>
-<p><code>GPTQConfig</code> parses:
-- bits, group_size, sym, etc.</p>
-<p><code>GPTQLinearMethod</code> does:
-- Replaces <code>nn.Linear</code> with <code>GPTQLinear</code>
-- Loads quantized weights from disk or memory
-- Registers kernel-based <code>gptq_gemm</code> for inference</p>
-<h2 id="2-layer-replacement-flow">2. Layer Replacement Flow</h2>
-<h3 id="step-by-step-flow">Step-by-Step Flow</h3>
+<p>GPTQ Example:</p>
+<ul>
+<li><code>GPTQConfig</code> parses: bits, group_size, sym, etc.</li>
+<li><code>GPTQLinearMethod</code> does: </li>
+<li>Replaces nn.Linear with GPTQLinear</li>
+<li>Loads quantized weights from disk or memory</li>
+<li>Registers kernel-based gptq_gemm for inference</li>
+</ul>
+<h2 id="2-layer-replacement-flow">2. Layer Replacement Flow<a class="headerlink" href="#2-layer-replacement-flow" title="Permanent link">&para;</a></h2>
+<p>Step-by-Step Flow:</p>
 <ol>
 <li><code>model_loader.py</code> reads the <code>quantize_config.json</code></li>
 <li>It instantiates a <code>QuantizationConfig</code> based on <code>quant_method</code></li>
-<li>Calls <code>.get_method()</code> to return a <code>QuantizationMethod</code> object</li>
+<li>Calls <code>.get_quant_method()</code> to return a <code>QuantizeMethodBase</code> object</li>
 <li>The <code>apply()</code> method replaces <code>torch.nn.Linear</code> with custom logic</li>
 <li>The <code>process_weights_after_loading()</code> method quantizes or prepares the weights</li>
 </ol>
 <p>This structure enables QTIP to seamlessly fit into the same flow.</p>
-<pre><code class="language-mermaid">graph TD
-    A[Load Model] --&gt; B[Read quantize_config.json]
+<pre><code class="language-mermaid">    A[Load Model] --&gt; B[Read quantize_config.json]
     B --&gt; C[Instantiate QuantizationConfig]
     C --&gt; D[Get QuantizationMethod]
     D --&gt; E[Apply layer replacement]
     E --&gt; F[Process weights]
     F --&gt; G[Ready for inference]
 </code></pre>
-<h2 id="3-custom-layer-logic">3. Custom Layer Logic</h2>
-<h3 id="for-gptq">For GPTQ:</h3>
-<p>The core linear layer becomes <code>GPTQLinear</code>, which:
+<h2 id="3-custom-layer-logic">3. Custom Layer Logic<a class="headerlink" href="#3-custom-layer-logic" title="Permanent link">&para;</a></h2>
+<p>For GPTQ:
+The core linear layer becomes <code>GPTQLinear</code>, which:
 - Stores compressed weight groups
 - Applies scaling/zero-point corrections
 - Uses <code>gptq_gemm()</code> CUDA kernel during forward pass</p>
-<h3 id="for-qtip-this-would-become">For QTIP, this would become:</h3>
-<p><code>QuantizedLinear</code> (a wrapper around <code>BitshiftLinear</code>)
+<p>For QTIP, this would become:
+<code>BitshiftLinear</code> (implemented in qtip.py)
 - Supports decode modes (lut, 1mad, 3inst)
 - Can use:
-  - CUDA kernel path (e.g., <code>bitshift_linear_kernel</code>)
-  - Python fallback path (e.g., <code>decode_compressed + torch.matmul</code>)</p>
-<h2 id="4-where-to-hook-qtip">4. Where to Hook QTIP</h2>
+  - Custom decode methods (implemented in custom_ops/)
+  - Codebook class for codebook operations
+  - Python fallback path (e.g., decode_compressed + torch.matmul)</p>
+<h2 id="4-where-to-hook-qtip">4. Where to Hook QTIP<a class="headerlink" href="#4-where-to-hook-qtip" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -933,97 +801,23 @@
 </thead>
 <tbody>
 <tr>
-<td><code>model_loader.py</code></td>
-<td>Loads config</td>
+<td><strong>init</strong>.py</td>
+<td>Load config</td>
 <td>Register "qtip" as quant method</td>
 </tr>
 <tr>
-<td><code>quantization/quant_config.py</code></td>
-<td>Config parsing</td>
-<td>Add <code>QTIPConfig</code></td>
+<td>qtip.py</td>
+<td>Config parsing and layer definition</td>
+<td>Add QTIPConfig and BitshiftLinear class</td>
 </tr>
 <tr>
-<td><code>quantization/method.py</code></td>
-<td>Method interface</td>
-<td>Add <code>QTIPLinearMethod</code></td>
-</tr>
-<tr>
-<td><code>layers/quantized_linear.py</code></td>
-<td>Layer definition</td>
-<td>Add <code>QuantizedLinear</code> class</td>
-</tr>
-<tr>
-<td><code>custom_ops/bitshift_linear.cpp</code></td>
-<td>CUDA kernel (optional)</td>
-<td>Register bitshift kernel (optional)</td>
+<td>custom_ops/</td>
+<td>Decode methods and codebook</td>
+<td>Implement decode methods and Codebook class</td>
 </tr>
 </tbody>
 </table>
 <p>This design keeps all QTIP logic localized and modular.</p>
-<h2 id="5-implementation-example">5. Implementation Example</h2>
-<p>Here's a simplified code example showing how the QTIP integration might look:</p>
-<pre><code class="language-python"># In quantization/quant_config.py
-class QTIPConfig(QuantizationConfig):
-    def __init__(self, bits=4, group_size=128, decode_mode=&quot;lut&quot;):
-        self.bits = bits
-        self.group_size = group_size
-        self.decode_mode = decode_mode
-
-    def get_method(self):
-        return QTIPLinearMethod(self)
-
-
-# In quantization/method.py
-class QTIPLinearMethod(QuantizationMethod):
-    def apply(self, model):
-        for name, module in model.named_modules():
-            if isinstance(module, nn.Linear):
-                # Replace with QTIP version
-                qtip_layer = QuantizedLinear(
-                    module.in_features,
-                    module.out_features,
-                    self.config.bits,
-                    self.config.group_size,
-                    self.config.decode_mode
-                )
-                # ... set up replacement ...
-
-    def process_weights_after_loading(self, model):
-        # Apply incoherence processing if needed
-        # Set up bitshift trellis and compressed weights
-</code></pre>
-<h2 id="6-extending-for-dynamic-decode-mode-selection">6. Extending for Dynamic Decode Mode Selection</h2>
-<p>One advantage of QTIP is the ability to switch decode modes at runtime. This can be implemented by:</p>
-<ol>
-<li>
-<p>Adding a runtime flag to the vLLM server:
-   <code>bash
-   python -m vllm.entrypoints.api_server --decode-mode=1mad</code></p>
-</li>
-<li>
-<p>Updating the <code>QuantizedLinear</code> implementation to support mode switching:
-   <code>python
-   class QuantizedLinear(nn.Module):
-       def forward(self, x):
-           # Check current decode mode
-           mode = get_current_decode_mode()
-           if mode == "lut":
-               return self._forward_lut(x)
-           elif mode == "1mad":
-               return self._forward_1mad(x)
-           # ...</code></p>
-</li>
-</ol>
-<p>This allows users to experiment with different decode modes without reloading the model.</p>
-<h2 id="7-performance-considerations">7. Performance Considerations</h2>
-<p>When implementing QTIP in vLLM, several performance considerations should be kept in mind:</p>
-<ul>
-<li><strong>Memory Locality</strong>: Keep the LUT tables (if used) in shared memory or L1 cache</li>
-<li><strong>Kernel Fusion</strong>: Where possible, fuse the decode and matmul operations</li>
-<li><strong>Parallelism</strong>: Ensure the decode methods are highly parallelizable for GPU execution</li>
-<li><strong>KV Cache Interaction</strong>: Consider how quantization affects KV cache management</li>
-</ul>
-<p>By carefully integrating with vLLM's existing architecture, QTIP can deliver its compression benefits while maintaining the performance advantages of vLLM's paged attention system.</p>
 
 
 
@@ -1031,6 +825,27 @@ class QTIPLinearMethod(QuantizationMethod):
 
 
 
+  
+    
+  
+  
+
+
+  <aside class="md-source-file">
+    
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="May 22, 2025 00:20:20">May 22, 2025</span>
+  </span>
+
+    
+    
+    
+    
+  </aside>
 
 
 
@@ -1046,23 +861,10 @@ class QTIPLinearMethod(QuantizationMethod):
         
       </main>
       
-        <footer class="md-footer">
-  
-  <div class="md-footer-meta md-typeset">
-    <div class="md-footer-meta__inner md-grid">
-      <div class="md-copyright">
-  
-  
-    Made with
-    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-      Material for MkDocs
-    </a>
-  
-</div>
-      
-    </div>
-  </div>
-</footer>
+        <p style="text-align: center; font-size: 1.3em; color: #777;">
+  This documentation was created by <strong>Runxin Shao</strong> and last updated on
+  <span style="white-space: nowrap;"></span>
+</p>
       
     </div>
     <div class="md-dialog" data-md-component="dialog">
